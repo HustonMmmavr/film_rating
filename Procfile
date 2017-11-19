@@ -1,1 +1,1 @@
-web: "gunicorn film_rating.wsgi"
+web: "gunicorn films_rating.wsgi"
