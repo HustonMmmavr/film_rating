@@ -7,3 +7,11 @@ install:
 # command to run tests
 script:
   - python ./manage.py test app.tests # or py.test for Python versions 3.5 and below
+
+
+deploy:
+  provider: heroku
+  api_key:
+    secure: ddbe560e-7726-41ed-bef4-bfbcc8a170a8
+  app: film-rating
+run: python manage.py runserver 8080
