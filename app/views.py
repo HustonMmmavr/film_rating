@@ -5,6 +5,9 @@ import simplejson as json
 from django.http import HttpResponse
 from django.db import DatabaseError
 
+def root():
+    return HttpResponse(json.dumps({"respMsg": u'alive'}),  status=200,
+            content_type='application/json')
 
 def is_parameter_valid(params, param_name):
     param = params.get(param_name)
