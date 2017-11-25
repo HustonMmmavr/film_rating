@@ -21,6 +21,5 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^get_rating/(?P<f_id>\w+)', views.get_rating),
     url(r'^set_rating', views.set_rating),
-    url(r'^/', views.root),
-
+    url(r'^$', views.root),
 ]
