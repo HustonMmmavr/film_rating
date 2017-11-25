@@ -5,7 +5,7 @@ import simplejson as json
 from django.http import HttpResponse
 from django.db import DatabaseError
 
-def root():
+def root(request):
     return HttpResponse(json.dumps({"respMsg": u'alive'}),  status=200,
             content_type='application/json')
 
