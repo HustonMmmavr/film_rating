@@ -16,4 +16,5 @@ deploy:
   api_key:
     secure: ddbe560e-7726-41ed-bef4-bfbcc8a170a8
   app: film-rating
-run: gunicorn films_ratings.wsgi
+run: pip insttall -r requirements
+     gunicorn films_ratings.wsgi
