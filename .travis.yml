@@ -15,8 +15,7 @@ deploy:
   provider: heroku
   api_key:
     secure: ddbe560e-7726-41ed-bef4-bfbcc8a170a8
-  app: film-rating
-run: pip install -r requirements
-     ./manage.py makemigrations
+  app: film-rating1
+run: ./manage.py makemigrations
      ./manage.py migrate
      # gunicorn films_ratings.wsgi
