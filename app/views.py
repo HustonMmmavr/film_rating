@@ -24,6 +24,7 @@ def is_parameter_valid(params, param_name):
 
 
 def get_rating(request, f_id):
+    print(f_id)
     try:
         val = int(f_id)
     except ValueError:
@@ -42,7 +43,7 @@ def get_rating(request, f_id):
         message = u'Database Error: {0}'.format(text_error)
         return HttpResponse(json.dumps({"respMsg": message}),  status=500,
         content_type='application/json')
-    return HttpResponse(json.dumps({"respMsg": u'Ok', "filmRating": f_rating}),  status=200,
+    return HttpResponse(json.dumps({"respMsg": u'Ok', "filmAvgRating": f_rating}),  status=200,
     content_type='application/json')
 
 
@@ -50,7 +51,7 @@ def get_rating(request, f_id):
 @csrf_exempt
 def set_rating(request):
     data = json.loads(request.body.decode("utf-8"))
-    print(data)
+    # print(data)
     is_valid_f_id = is_parameter_valid(data, "filmId")
     if is_valid_f_id != True:
         return HttpResponse(json.dumps({"respMsg": is_valid_f_id}),  status=400,
@@ -59,7 +60,7 @@ def set_rating(request):
 
 
     is_valid_f_rating = is_parameter_valid(data, "filmRating")
-    print(is_valid_f_rating)
+    # print(is_valid_f_rating)
     if is_valid_f_rating != True:
         return HttpResponse(json.dumps({"respMsg": is_valid_f_rating}),  status=400,
         content_type='application/json')
@@ -83,5 +84,5 @@ def set_rating(request):
         return HttpResponse(json.dumps({"respMsg": message}),  status=500,
         content_type='application/json')
 
-    return HttpResponse(json.dumps({"respMsg": "Ok", "filmAvgRating": str(film_avg_rating)}),
+    return HttpResponse(json.dumps({"respMsg": "Ok", "filmAvgRating": film_avg_rating}),
                         status=200, content_type='application/json')

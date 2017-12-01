@@ -8,8 +8,8 @@ install:
 before_script:  psql -c "CREATE ROLE hust with superuser login password '951103'" - U postgres;
                 psql -c "CREATE DATABASE lastunion;" -U postgres;
 script:
-  - python ./manage.py test app.tests # or py.test for Python versions 3.5 and below
-
+  - coverage ./manage.py test app # or py.test for Python versions 3.5 and below
+  - coverage report
 
 deploy:
   provider: heroku

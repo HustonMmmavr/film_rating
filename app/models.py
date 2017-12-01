@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from django.db.models.functions import Coalesce
 import datetime
 
+
 class FilmRatingManager(models.Manager):
     def save_rating(self, film_id, film_rating, user_id):
         obj, new = self.update_or_create(film_id=film_id, user_id=user_id, defaults={'film_rating': film_rating})
@@ -13,9 +14,17 @@ class FilmRatingManager(models.Manager):
             obj = new
         return self.get_rating(film_id)
 
+    def exist_rating(self, film_id):
+        res = self.filter(film_id=film_id).aggregate(count=Count('*'))['count']
+        # print(str(res) + 'res')
+        return True if res > 0 else False
+
     def get_rating(self, film_id):
+        if self.exist_rating(film_id) == False:
+            return -1
         res = self.filter(film_id=film_id).aggregate(avg=Avg('film_rating'))['avg']
-        return res if res else -1
+        # print(res)
+        return res
 
 class FilmRating(models.Model):
     film_id = models.IntegerField()

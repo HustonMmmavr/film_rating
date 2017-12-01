@@ -83,6 +83,14 @@ if 'TRAVIS' in os.environ:
             'PASSWORD': '',
             'HOST':     'localhost',
             'PORT':     '',
+        },
+        'test': {
+            'ENGINE':   'django.db.backends.postgresql_psycopg2',
+            'NAME':     'travisci_test',
+            'USER':     'postgres',
+            'PASSWORD': '',
+            'HOST':     'localhost',
+            'PORT':     '',
         }
 }
 else:
@@ -94,7 +102,15 @@ else:
             'PASSWORD' : '951103',
             'HOST' : '127.0.0.1',
             'PORT' : '5432',
-        }
+        },
+        # 'test': {
+        #     'ENGINE':   'django.db.backends.postgresql_psycopg2',
+        #     'NAME':     'test',
+        #     'USER':     'hust',
+        #     'PASSWORD': '951103',
+        #     'HOST':     '127.0.0.1',
+        #     'PORT':     '5432',
+        # }
 
     # 'default': {
     #     'ENGINE': 'django.db.backends.sqlite3',
