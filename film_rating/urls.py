@@ -22,7 +22,7 @@ urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
     re_path(r'^delete_film_rating', views.delete_film_rating),
     re_path(r'^status', views.root),
-    re_path(r'^get_linked_objects/(?P<id>[-\w]+)', views.get_linked_objects),
+    re_path(r'^get_linked_objects/(?P<id>[-\w]+)/$', views.get_linked_objects),
     re_path(r'^get_rating/(?P<id>[-\w]+)', views.get_rating),
     re_path(r'^set_rating', views.set_rating),
     re_path(r'^$', views.root),
@@ -40,4 +40,3 @@ urlpatterns = [
 #    path('set_rating/', views.set_rating),
 #    path('', views.root),
 #]
-

@@ -33,21 +33,14 @@ def check_id(id):
         content_type='application/json')
     return True
 
+
+
 def get_rating(request, id):
     data = check_id(id)
     if data != True:
         return data
 
     f_id = int(id)
-    # try:
-    #     val = int(f_id)
-    # except ValueError:
-    #     return HttpResponse(json.dumps({"respMsg": u'id is not a digit'}),  status=400,
-    #     content_type='application/json')
-    # if val < 0:
-    #     return HttpResponse(json.dumps({"respMsg": u'id is cant be less 0'}),  status=400,
-    #     content_type='application/json')
-
     try:
         f_rating = FilmRating.objects.get_rating(f_id)
         if f_rating == -1:
@@ -60,9 +53,41 @@ def get_rating(request, id):
     return HttpResponse(json.dumps({"respMsg": u'Ok', "filmAvgRating": f_rating}),  status=200,
     content_type='application/json')
 
+
+
 def get_linked_objects(request, id):
-    return HttpResponse(json.dumps({"respMsg": u'Ok', "filmAvgRating": f_rating}),  status=200,
+    data = check_id(id)
+    if data != True:
+        return data
+    object_id = int(id)
+
+    search_by = request.GET.get('search_by', '')
+
+    try:
+        if search_by=='user_id':
+            ids = FilmRating.objects.get_films_by_user(object_id)
+            if ids != -1:
+                out_data = "filmId"
+            else:
+                return HttpResponse(json.dumps({"respMsg": "no films rated by user"}) ,status=404,
+                content_type='application/json')
+        else:
+            ids = FilmRating.objects.get_users_by_film(object_id)
+            if ids != -1:
+                out_data = "userId"
+            else:
+                return HttpResponse(json.dumps({"respMsg": "no users rated this film"}) ,status=404,
+                content_type='application/json')
+    except DatabaseError as text_error:
+        message = u'Database Error: {0}'.format(text_error)
+        return HttpResponse(json.dumps({"respMsg": message}),  status=500,
+        content_type='application/json')
+
+    return HttpResponse(json.dumps({"respMsg": u'Ok', out_data: ids}),  status=200,
     content_type='application/json')
+
+
+
 
 @csrf_exempt
 def delete_film_rating(request):
@@ -81,54 +106,6 @@ def delete_film_rating(request):
         content_type='application/json')
     return HttpResponse(json.dumps({"respMsg": u'Ok'}),  status=200,
     content_type='application/json')
-
-def get_films_by_user(request, u_id):
-    data = check_id(u_id)
-    if data != True:
-        return data
-
-    u_id = int(u_id)
-    return HttpResponse(json.dumps({"respMsg": message}),  status=500, content_type='application/json')
-    # try:
-    #
-    # except DatabaseError as text_error:
-    #     message = u'Database Error: {0}'.format(text_error)
-    #     return HttpResponse(json.dumps({"respMsg": message}),  status=500,
-    # content_type='application/json')
-    # content_type='application/json')
-
-def get_users_by_film(request, f_id):
-    data = check_id(f_id)
-    if data != True:
-        return data
-
-    f_id = int(f_id)
-    return HttpResponse(json.dumps({"respMsg": message}),  status=500,
-    content_type='application/json')
-    # try:
-    #
-    # except DatabaseError as text_error:
-    #     message = u'Database Error: {0}'.format(text_error)
-    #     return HttpResponse(json.dumps({"respMsg": message}),  status=500,
-    #     content_type='application/json')
-
-
-# def get_users_by_film(request, u_id):
-#     data = check_id(u_id)
-#     if data != True:
-#         return data
-#
-#     f_id = int(f_id)
-#     return HttpResponse(json.dumps({"respMsg": message}),  status=500,
-#     content_type='application/json')
-#     # try:
-#     #
-#     # except DatabaseError as text_error:
-#     #     message = u'Database Error: {0}'.format(text_error)
-#     #     return HttpResponse(json.dumps({"respMsg": message}),  status=500,
-#     #     content_type='application/json')
-
-
 
 @csrf_exempt
 def set_rating(request):

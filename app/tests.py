@@ -9,13 +9,11 @@ class TestModels(TestCase):
         FilmRating.objects.create(film_id=5, film_rating=10, user_id=4)
         FilmRating.objects.create(film_id=5, film_rating=4, user_id=3)
         FilmRating.objects.create(film_id=2, film_rating=1, user_id=1)
-        FilmRating.objects.create(film_id=2, film_rating=3, user_id=1)
+        FilmRating.objects.create(film_id=2, film_rating=3, user_id=4)
         FilmRating.objects.create(film_id=3, film_rating=2, user_id=1)
         FilmRating.objects.create(film_id=4, film_rating=0, user_id=1)
 
     def test_get_rating_Ok(self):
-        # print(FilmRating.objects.count())
-
         rating = FilmRating.objects.get_rating(4)
         self.assertEqual(rating, 0)
         rating = FilmRating.objects.get_rating(5)
@@ -39,8 +37,24 @@ class TestModels(TestCase):
 
     def test_delete(self):
         cnt = FilmRating.objects.delete_ratings_by_film_id(5)
-        print(cnt)
-        self.assertEqual(cnt[0], 4);
+        self.assertEqual(cnt[0], 4)
+
+    def test_get_users_by_film_id_not_exist(self):
+        val = FilmRating.objects.get_users_by_film(100)
+        self.assertEqual(val, -1)
+
+    def test_get_users_by_film_id__exist(self):
+        val = FilmRating.objects.get_users_by_film(5)
+        self.assertEqual(val, [1,2,4,3])
+
+    def test_get_users_by_film_id_not_exist(self):
+        val = FilmRating.objects.get_films_by_user(100)
+        self.assertEqual(val, -1)
+
+    def test_get_users_by_film_id_not_exist(self):
+        val = FilmRating.objects.get_films_by_user(1)
+        self.assertEqual(val, [5,2,3,4])
+
 
 
 class TetsSetRating(TestCase):
@@ -181,6 +195,55 @@ class TestDeleteRating(TestCase):
         response = self.client.post('/delete_film_rating', json.dumps({"filmId": "5"}), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
+class TestSearchByObject(TestCase):
+    def setUp(self):
+        self.client = Client()
+        FilmRating.objects.create(film_id=5, film_rating=0, user_id=1)
+        FilmRating.objects.create(film_id=5, film_rating=2, user_id=2)
+        FilmRating.objects.create(film_id=5, film_rating=10, user_id=4)
+        FilmRating.objects.create(film_id=5, film_rating=4, user_id=3)
+        FilmRating.objects.create(film_id=2, film_rating=1, user_id=1)
+        FilmRating.objects.create(film_id=2, film_rating=3, user_id=3)
+        FilmRating.objects.create(film_id=3, film_rating=2, user_id=1)
+        FilmRating.objects.create(film_id=4, film_rating=0, user_id=1)
+
+    def test_search_id_string(self):
+        response = self.client.get('/get_linked_objects/sdgsdrg/')
+        data = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(response.status_code,400)
+        self.assertEqual(data['respMsg'], "id is not a digit")
+
+    def test_search_id_less_zero(self):
+        response = self.client.get('/get_linked_objects/-2/')
+        data = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(response.status_code,400)
+        self.assertEqual(data['respMsg'], "id is cant be less 0")
+
+    def test_search_by_film_id_not_exist(self):
+        response = self.client.get('/get_linked_objects/100/?search_by=film_id')
+        data = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(response.status_code,404)
+        self.assertEqual(data['respMsg'], "no users rated this film")
+
+    def test_search_by_film_id_ok(self):
+        response = self.client.get('/get_linked_objects/5/?search_by=film_id')
+        data = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(data['respMsg'], "Ok")
+        self.assertEqual(data['userId'], [1,2,4,3])
+
+    def test_search_by_user_id_not_exist(self):
+        response = self.client.get('/get_linked_objects/100/?search_by=user_id')
+        data = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(response.status_code,404)
+        self.assertEqual(data['respMsg'], "no films rated by user")
+
+    def test_search_by_user_ok(self):
+        response = self.client.get('/get_linked_objects/1/?search_by=user_id')
+        data = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(data['respMsg'], "Ok")
+        self.assertEqual(data['filmId'], [5, 2,3,4])
 
 
 # Create your tests here.

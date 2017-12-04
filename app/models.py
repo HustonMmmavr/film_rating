@@ -16,7 +16,6 @@ class FilmRatingManager(models.Manager):
 
     def exist_rating(self, film_id):
         res = self.filter(film_id=film_id).aggregate(count=Count('*'))['count']
-        # print(str(res) + 'res')
         return True if res > 0 else False
 
     def delete_ratings_by_film_id(self, film_id):
@@ -27,8 +26,18 @@ class FilmRatingManager(models.Manager):
         if self.exist_rating(film_id) == False:
             return -1
         res = self.filter(film_id=film_id).aggregate(avg=Avg('film_rating'))['avg']
-        # print(res)
         return res
+
+    def get_users_by_film(self, id):
+        res = self.filter(film_id=id).values_list('user_id', flat=True)
+        res = list(res)
+        return res if len(res) > 0 else -1
+
+    def get_films_by_user(self, id):
+        res = self.filter(user_id=id).values_list('film_id', flat=True)
+        res = list(res)
+        return res if len(res) > 0 else -1
+
 
 class FilmRating(models.Model):
     film_id = models.IntegerField()
