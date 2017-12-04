@@ -33,12 +33,12 @@ def check_id(id):
         content_type='application/json')
     return True
 
-def get_rating(request, f_id):
-    data = check_id(f_id)
+def get_rating(request, id):
+    data = check_id(id)
     if data != True:
         return data
 
-    f_id = int(f_id)
+    f_id = int(id)
     # try:
     #     val = int(f_id)
     # except ValueError:
@@ -57,6 +57,10 @@ def get_rating(request, f_id):
         message = u'Database Error: {0}'.format(text_error)
         return HttpResponse(json.dumps({"respMsg": message}),  status=500,
         content_type='application/json')
+    return HttpResponse(json.dumps({"respMsg": u'Ok', "filmAvgRating": f_rating}),  status=200,
+    content_type='application/json')
+
+def get_linked_objects(request, id):
     return HttpResponse(json.dumps({"respMsg": u'Ok', "filmAvgRating": f_rating}),  status=200,
     content_type='application/json')
 
