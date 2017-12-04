@@ -22,21 +22,34 @@ def is_parameter_valid(param_name, param):
     return True
 
 
-# def is_parameter_valid(params, param_name):
-#     param = params.get(param_name)
-
-def get_rating(request, f_id):
+def check_id(id):
     try:
-        val = int(f_id)
+        val = int(id)
     except ValueError:
         return HttpResponse(json.dumps({"respMsg": u'id is not a digit'}),  status=400,
         content_type='application/json')
     if val < 0:
         return HttpResponse(json.dumps({"respMsg": u'id is cant be less 0'}),  status=400,
         content_type='application/json')
+    return True
+
+def get_rating(request, f_id):
+    data = check_id(f_id)
+    if data != True:
+        return data
+
+    f_id = int(f_id)
+    # try:
+    #     val = int(f_id)
+    # except ValueError:
+    #     return HttpResponse(json.dumps({"respMsg": u'id is not a digit'}),  status=400,
+    #     content_type='application/json')
+    # if val < 0:
+    #     return HttpResponse(json.dumps({"respMsg": u'id is cant be less 0'}),  status=400,
+    #     content_type='application/json')
 
     try:
-        f_rating = FilmRating.objects.get_rating(val)
+        f_rating = FilmRating.objects.get_rating(f_id)
         if f_rating == -1:
             return HttpResponse(json.dumps({"respMsg": u'no rating'}),  status=404,
             content_type='application/json')
@@ -64,8 +77,53 @@ def delete_film_rating(request):
         content_type='application/json')
     return HttpResponse(json.dumps({"respMsg": u'Ok'}),  status=200,
     content_type='application/json')
-# def get_films_by_user(request):
-#     data = json.loads(request.body.decode("utf-8"))
+
+def get_films_by_user(request, u_id):
+    data = check_id(u_id)
+    if data != True:
+        return data
+
+    u_id = int(u_id)
+    return HttpResponse(json.dumps({"respMsg": message}),  status=500, content_type='application/json')
+    # try:
+    #
+    # except DatabaseError as text_error:
+    #     message = u'Database Error: {0}'.format(text_error)
+    #     return HttpResponse(json.dumps({"respMsg": message}),  status=500,
+    # content_type='application/json')
+    # content_type='application/json')
+
+def get_users_by_film(request, f_id):
+    data = check_id(f_id)
+    if data != True:
+        return data
+
+    f_id = int(f_id)
+    return HttpResponse(json.dumps({"respMsg": message}),  status=500,
+    content_type='application/json')
+    # try:
+    #
+    # except DatabaseError as text_error:
+    #     message = u'Database Error: {0}'.format(text_error)
+    #     return HttpResponse(json.dumps({"respMsg": message}),  status=500,
+    #     content_type='application/json')
+
+
+# def get_users_by_film(request, u_id):
+#     data = check_id(u_id)
+#     if data != True:
+#         return data
+#
+#     f_id = int(f_id)
+#     return HttpResponse(json.dumps({"respMsg": message}),  status=500,
+#     content_type='application/json')
+#     # try:
+#     #
+#     # except DatabaseError as text_error:
+#     #     message = u'Database Error: {0}'.format(text_error)
+#     #     return HttpResponse(json.dumps({"respMsg": message}),  status=500,
+#     #     content_type='application/json')
+
 
 
 @csrf_exempt
@@ -83,30 +141,6 @@ def set_rating(request):
     f_id = int(data['filmId'])
     u_id = int(data['userId'])
     f_rating = int(data['filmRating'])
-        # print(data)
-    # is_valid_f_id = is_parameter_valid(data, "filmId")
-    # if is_valid_f_id != True:
-    #     return HttpResponse(json.dumps({"respMsg": is_valid_f_id}),  status=400,
-    #     content_type='application/json')
-    # f_id = int(data['filmId'])
-    #
-    #
-    # is_valid_f_rating = is_parameter_valid(data, "filmRating")
-    # # print(is_valid_f_rating)
-    # if is_valid_f_rating != True:
-    #     return HttpResponse(json.dumps({"respMsg": is_valid_f_rating}),  status=400,
-    #     content_type='application/json')
-    #
-    # f_rating = int(data['filmRating'])
-    # if f_rating > 10:
-    #     return HttpResponse(json.dumps({"respMsg": u'Rating cant be mare than 10'}),  status=400,
-    #     content_type='application/json')
-    #
-    # is_valid_u_id = is_parameter_valid(data, "userId")
-    # if is_valid_u_id != True:
-    #     return HttpResponse(json.dumps({"respMsg": is_valid_u_id}),  status=400,
-    #     content_type='application/json')
-    # u_id = int(data['userId'])
 
     film_rating_record = FilmRating(f_id, f_rating, u_id)
     try:
