@@ -15,12 +15,12 @@ class TestModels(TestCase):
 
     def test_get_rating_Ok(self):
         # print(FilmRating.objects.count())
-        
+
         rating = FilmRating.objects.get_rating(4)
         self.assertEqual(rating, 0)
         rating = FilmRating.objects.get_rating(5)
         self.assertEqual(rating, 4)
-        
+
     def test_get_rating_no_film(self):
         rating = FilmRating.objects.get_rating(100)
         self.assertEqual(rating, -1)
@@ -37,8 +37,10 @@ class TestModels(TestCase):
         rating = FilmRating.objects.save_rating(7, 8, 2)
         self.assertEqual(rating, 8)
 
-    def test_sum1(self):
-        self.assertTrue(True)
+    def test_delete(self):
+        cnt = FilmRating.objects.delete_ratings_by_film_id(5)
+        print(cnt)
+        self.assertEqual(cnt[0], 4);
 
 
 class TetsSetRating(TestCase):
@@ -52,7 +54,7 @@ class TetsSetRating(TestCase):
         FilmRating.objects.create(film_id=2, film_rating=3, user_id=1)
         FilmRating.objects.create(film_id=3, film_rating=2, user_id=1)
         FilmRating.objects.create(film_id=4, film_rating=0, user_id=1)
-    
+
     def test_no_film_id(self):
         response = self.client.post('/set_rating', json.dumps({"filmId": ""}), content_type="application/json")
         data = json.loads(response.content.decode("utf-8"))
@@ -90,19 +92,19 @@ class TetsSetRating(TestCase):
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(response.status_code,400)
         self.assertEqual(data['respMsg'], "filmRating cant be < 0")
-    
+
     def test_no_user_id(self):
         response = self.client.post('/set_rating', json.dumps({"filmId":"5", "filmRating": "5"}), content_type="application/json")
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(response.status_code,400)
         self.assertEqual(data['respMsg'], "userId is Empty")
-    
+
     def test_user_id_is_string(self):
         response = self.client.post('/set_rating', json.dumps({"filmId":"5", "filmRating": "5", "userId":"sg"}), content_type="application/json")
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(response.status_code,400)
         self.assertEqual(data['respMsg'], "userId is not a digit")
-    
+
     def test_user_id_lower_zero(self):
         response = self.client.post('/set_rating', json.dumps({"filmId":"5", "filmRating": "5", "userId": "-5"}), content_type="application/json")
         data = json.loads(response.content.decode("utf-8"))
@@ -115,7 +117,7 @@ class TetsSetRating(TestCase):
         self.assertEqual(response.status_code,200)
         self.assertEqual(data['respMsg'], "Ok")
         self.assertEqual(data['filmAvgRating'], 5.0)
-    
+
 class TestGetRating(TestCase):
     def setUp(self):
         self.client = Client()
@@ -127,7 +129,7 @@ class TestGetRating(TestCase):
         FilmRating.objects.create(film_id=2, film_rating=3, user_id=1)
         FilmRating.objects.create(film_id=3, film_rating=2, user_id=1)
         FilmRating.objects.create(film_id=4, film_rating=0, user_id=1)
-        
+
     def test_get_film_rating_id_id_string(self):
         response = self.client.get('/get_rating/sdgsdrg')
         data = json.loads(response.content.decode("utf-8"))
@@ -145,18 +147,40 @@ class TestGetRating(TestCase):
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(response.status_code,404)
         self.assertEqual(data['respMsg'], "no rating")
-    
+
     def test_get_film_rating_id_ok(self):
         response = self.client.get('/get_rating/5')
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(response.status_code,200)
         self.assertEqual(data['respMsg'], "Ok")
         self.assertEqual(data['filmAvgRating'], 4.0)
-        
+
 class TestStatus(TestCase):
     def test_status(self):
         client = Client()
         response = client.get('/status')
         self.assertEqual(response.status_code, 200)
-        
+
+class TestDeleteRating(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_null_id(self):
+        response = self.client.post('/delete_film_rating', json.dumps({}), content_type="application/json")
+        data = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['respMsg'], "filmId is Empty")
+
+    def test_invalid_id(self):
+        response = self.client.post('/delete_film_rating', json.dumps({"filmId": "sef"}), content_type="application/json")
+        data = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['respMsg'], "filmId is not a digit")
+
+    def test_ok(self):
+        response = self.client.post('/delete_film_rating', json.dumps({"filmId": "5"}), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+
+
+
 # Create your tests here.

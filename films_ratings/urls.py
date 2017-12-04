@@ -19,6 +19,7 @@ from app import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^delete_film_rating', views.delete_film_rating),
     url(r'^status', views.root),
     url(r'^get_rating/(?P<f_id>[-\w]+)', views.get_rating),
     url(r'^set_rating', views.set_rating),

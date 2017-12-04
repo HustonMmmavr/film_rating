@@ -19,6 +19,10 @@ class FilmRatingManager(models.Manager):
         # print(str(res) + 'res')
         return True if res > 0 else False
 
+    def delete_ratings_by_film_id(self, film_id):
+        res = self.filter(film_id=film_id).delete()
+        return res
+
     def get_rating(self, film_id):
         if self.exist_rating(film_id) == False:
             return -1
