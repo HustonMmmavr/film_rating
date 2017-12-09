@@ -208,38 +208,38 @@ class TestSearchByObject(TestCase):
         FilmRating.objects.create(film_id=4, film_rating=0, user_id=1)
 
     def test_search_id_string(self):
-        response = self.client.get('/get_linked_objects/sdgsdrg/')
+        response = self.client.get('/get_linked_objects/sdgsdrg')
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(response.status_code,400)
         self.assertEqual(data['respMsg'], "id is not a digit")
 
     def test_search_id_less_zero(self):
-        response = self.client.get('/get_linked_objects/-2/')
+        response = self.client.get('/get_linked_objects/-2')
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(response.status_code,400)
         self.assertEqual(data['respMsg'], "id is cant be less 0")
 
     def test_search_by_film_id_not_exist(self):
-        response = self.client.get('/get_linked_objects/100/?search_by=film_id')
+        response = self.client.get('/get_linked_objects/100?search_by=film_id')
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(response.status_code,404)
         self.assertEqual(data['respMsg'], "no users rated this film")
 
     def test_search_by_film_id_ok(self):
-        response = self.client.get('/get_linked_objects/5/?search_by=film_id')
+        response = self.client.get('/get_linked_objects/5?search_by=film_id')
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(response.status_code,200)
         self.assertEqual(data['respMsg'], "Ok")
         self.assertEqual(data['userId'], [1,2,4,3])
 
     def test_search_by_user_id_not_exist(self):
-        response = self.client.get('/get_linked_objects/100/?search_by=user_id')
+        response = self.client.get('/get_linked_objects/100?search_by=user_id')
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(response.status_code,404)
         self.assertEqual(data['respMsg'], "no films rated by user")
 
     def test_search_by_user_ok(self):
-        response = self.client.get('/get_linked_objects/1/?search_by=user_id')
+        response = self.client.get('/get_linked_objects/1?search_by=user_id')
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(response.status_code,200)
         self.assertEqual(data['respMsg'], "Ok")
