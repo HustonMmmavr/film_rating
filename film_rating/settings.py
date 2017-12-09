@@ -101,7 +101,7 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'fr',
-            'USER' : 'hust',
+            'USER' : 'mavr',
             'PASSWORD' : '951103',
             'HOST' : '127.0.0.1',
             'PORT' : '5432',
