@@ -9,19 +9,13 @@ import datetime
 
 class FilmRatingManager(models.Manager):
     def save_rating(self, film_id, film_rating, user_id):
+        old_data = None
         old = self.filter(film_id = film_id, user_id = user_id)
         if old.count() > 0:
-            old_data = old[0]
+            old_data = old[0].film_rating
 
         obj, new = self.update_or_create(film_id=film_id, user_id=user_id, defaults={'film_rating': film_rating})
-        flag = False
-        old_data = None
-        if new != True:
-            # print( obj )
-            # print(new )
-            # old_data = old#old[0].film_rating
-            # obj = new
-            flag = True
+        flag = not new
         return flag, old_data, self.get_rating(film_id)
 
     def exist_rating(self, film_id):

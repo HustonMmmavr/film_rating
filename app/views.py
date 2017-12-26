@@ -64,11 +64,8 @@ def delete_rating(request): #f_id, u_id):
             return HttpResponse(json.dumps({"respMsg": check}),  status=400,
             content_type='application/json')
     try:
-        # if data['flag'] == "true":
         rec = FilmRating.objects.filter(film_id = data['filmId'], user_id = data['userId'])
         rec.delete()
-        #else:
-        # film_avg_rating = FilmRating.objects.get_rating(f_id)
     except DatabaseError as text_error:
         message = u'Database Error: {0}'.format(text_error)
         return HttpResponse(json.dumps({"respMsg": message}),  status=500,
@@ -148,30 +145,12 @@ def set_rating(request):
     u_id = int(data['userId'])
     f_rating = int(data['filmRating'])
 
-    # flag, old_data, film_rating_record = FilmRating(f_id, f_rating, u_id)
     try:
         flag, old_data, film_avg_rating = FilmRating.objects.save_rating(f_id, f_rating, u_id)
-
-        # film_avg_rating = FilmRating.objects.save_rating(f_id, f_rating, u_id)
     except DatabaseError as text_error:
         message = u'Database Error: {0}'.format(text_error)
         return HttpResponse(json.dumps({"respMsg": message}),  status=500,
         content_type='application/json')
-
     return HttpResponse(json.dumps({"respMsg": "Ok", "filmAvgRating": film_avg_rating,
         "isUpdated" : flag, "oldData" : old_data}),
                         status=200, content_type='application/json')
-
-
-
-
-    #
-    # data = check_id(id)
-    # if data != True:
-    #     return data
-    # fid = int(id)
-    #
-    # data = check_id(u_id)
-    # if data != True:
-    #     return data
-    # uid = int(id)
