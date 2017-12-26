@@ -53,27 +53,27 @@ def get_rating(request, id):
     return HttpResponse(json.dumps({"respMsg": u'Ok', "filmAvgRating": f_rating}),  status=200,
     content_type='application/json')
 
-# @csrf_exempt
+@csrf_exempt
 def delete_rating(request): #f_id, u_id):
     data = json.loads(request.body.decode("utf-8"))
 
-    important_params = ['filmId', 'filmRating', 'userId']
+    important_params = ['filmId', 'userId']
     for param in important_params:
         check = is_parameter_valid(param, data.get(param))
         if check != True:
             return HttpResponse(json.dumps({"respMsg": check}),  status=400,
             content_type='application/json')
     try:
-        if flag == "true":
-            rec = FilmRating.objects.filter(film_id = f_id, user_id = u_id)
-            rec.delete()
-        else:
-            film_avg_rating = FilmRating.objects.save_rating(f_id, f_rating, u_id)
+        # if data['flag'] == "true":
+        rec = FilmRating.objects.filter(film_id = data['filmId'], user_id = data['userId'])
+        rec.delete()
+        #else:
+        # film_avg_rating = FilmRating.objects.get_rating(f_id)
     except DatabaseError as text_error:
         message = u'Database Error: {0}'.format(text_error)
         return HttpResponse(json.dumps({"respMsg": message}),  status=500,
         content_type='application/json')
-    return HttpResponse(json.dumps({"respMsg": u'Ok', out_data: ids}),  status=200,
+    return HttpResponse(json.dumps({"respMsg": u'Ok'}),  status=200,
     content_type='application/json')
 
 
