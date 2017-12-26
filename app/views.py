@@ -53,6 +53,31 @@ def get_rating(request, id):
     return HttpResponse(json.dumps({"respMsg": u'Ok', "filmAvgRating": f_rating}),  status=200,
     content_type='application/json')
 
+# @csrf_exempt
+def delete_rating(request): #f_id, u_id):
+    data = json.loads(request.body.decode("utf-8"))
+
+    important_params = ['filmId', 'filmRating', 'userId']
+    for param in important_params:
+        check = is_parameter_valid(param, data.get(param))
+        if check != True:
+            return HttpResponse(json.dumps({"respMsg": check}),  status=400,
+            content_type='application/json')
+    try:
+        if flag == "true":
+            rec = FilmRating.objects.filter(film_id = f_id, user_id = u_id)
+            rec.delete()
+        else:
+            film_avg_rating = FilmRating.objects.save_rating(f_id, f_rating, u_id)
+    except DatabaseError as text_error:
+        message = u'Database Error: {0}'.format(text_error)
+        return HttpResponse(json.dumps({"respMsg": message}),  status=500,
+        content_type='application/json')
+    return HttpResponse(json.dumps({"respMsg": u'Ok', out_data: ids}),  status=200,
+    content_type='application/json')
+
+
+
 
 
 def get_linked_objects(request, id):
@@ -123,13 +148,30 @@ def set_rating(request):
     u_id = int(data['userId'])
     f_rating = int(data['filmRating'])
 
-    film_rating_record = FilmRating(f_id, f_rating, u_id)
+    # flag, old_data, film_rating_record = FilmRating(f_id, f_rating, u_id)
     try:
-        film_avg_rating = FilmRating.objects.save_rating(f_id, f_rating, u_id)
+        flag, old_data, film_avg_rating = FilmRating.objects.save_rating(f_id, f_rating, u_id)
+
+        # film_avg_rating = FilmRating.objects.save_rating(f_id, f_rating, u_id)
     except DatabaseError as text_error:
         message = u'Database Error: {0}'.format(text_error)
         return HttpResponse(json.dumps({"respMsg": message}),  status=500,
         content_type='application/json')
 
-    return HttpResponse(json.dumps({"respMsg": "Ok", "filmAvgRating": film_avg_rating}),
+    return HttpResponse(json.dumps({"respMsg": "Ok", "filmAvgRating": film_avg_rating,
+        "isUpdated" : flag, "oldData" : old_data}),
                         status=200, content_type='application/json')
+
+
+
+
+    #
+    # data = check_id(id)
+    # if data != True:
+    #     return data
+    # fid = int(id)
+    #
+    # data = check_id(u_id)
+    # if data != True:
+    #     return data
+    # uid = int(id)
