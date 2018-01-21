@@ -6,8 +6,8 @@ import simplejson as json
 from django.http import HttpResponse
 from django.db import DatabaseError
 from django.utils.crypto import get_random_string
-from datetime import datetime
-
+from datetime import datetime, time
+from time import mktime as mktime
 def root(request):
     return HttpResponse(json.dumps({"respMsg": u'alive'}),  status=200,
             content_type='application/json')
@@ -39,10 +39,19 @@ def check_id(id):
 
 ######################################################
 def check_token_valid(token):
-    if token == db.token and abs(t_created - now()) > lifetime:
-        return True
-    return False
-###################################
+    print('here')
+    record = AccessApplication.objects.filter(appSecret=token)
+    if record.count() == 0:
+        return False
+
+    record = AccessApplication.objects.filter(appSecret=token)[0]
+    now = mktime(datetime.now().timetuple()) #now.total_seconds())
+    created = mktime(record.created.timetuple())
+
+    if now - created > record.life:
+        return False
+
+    return True
 
 def get_rating(request, id):
     data = check_id(id)
@@ -63,7 +72,6 @@ def get_rating(request, id):
     content_type='application/json')
 
 
-#####################################
 @csrf_exempt
 def get_new_token(request):
     data = json.loads(request.body.decode("utf-8"))
@@ -85,12 +93,13 @@ def get_new_token(request):
     else:
         return HttpResponse(json.dumps({"respMsg": u'Uncknown server'}),  status=401,
         content_type='application/json')
-#####################################################
 
 @csrf_exempt
 def delete_rating(request):
-    ###
     data = json.loads(request.body.decode("utf-8"))
+    if check_token_valid(data['appSecret']) == False:
+        return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
+        content_type='application/json')
 
     important_params = ['filmId', 'userId']
     for param in important_params:
@@ -113,14 +122,17 @@ def delete_rating(request):
 
 
 def get_linked_objects(request, id):
-    ###
-
     data = check_id(id)
     if data != True:
         return data
     object_id = int(id)
 
     search_by = request.GET.get('search_by', '')
+    token = request.GET.get('appSecret')
+
+    if check_token_valid(token) == False:
+        return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
+        content_type='application/json')
 
     try:
         if search_by=='user_id':
@@ -150,8 +162,11 @@ def get_linked_objects(request, id):
 
 @csrf_exempt
 def delete_film_rating(request):
-    ### check
     data = json.loads(request.body.decode("utf-8"))
+    if check_token_valid(data['appSecret']) == False:
+        return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
+        content_type='application/json')
+
     check = is_parameter_valid('filmId', data.get('filmId'))
     if check != True:
         return HttpResponse(json.dumps({"respMsg": check}),  status=400,
@@ -169,10 +184,11 @@ def delete_film_rating(request):
 
 @csrf_exempt
 def set_rating(request):
-    # check
     data = json.loads(request.body.decode("utf-8"))
+    if check_token_valid(data['appSecret']) == False:
+        return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
+        content_type='application/json')
 
-    #check params
     important_params = ['filmId', 'filmRating', 'userId']
     for param in important_params:
         check = is_parameter_valid(param, data.get(param))
@@ -193,3 +209,19 @@ def set_rating(request):
     return HttpResponse(json.dumps({"respMsg": "Ok", "filmAvgRating": film_avg_rating,
         "isUpdated" : flag, "oldData" : old_data}),
                         status=200, content_type='application/json')
+
+
+
+
+                        # now = datetime.now()
+                        # print('a')
+                        # print(now)
+                        # print('b')
+                        # print(record.created)
+                        # print(now - record.created)
+                        # now - record.created > record.life
+
+                        # if token == db.token and abs(t_created - now()) > lifetime:
+                            # return True
+                        # return False
+                    ###################################
