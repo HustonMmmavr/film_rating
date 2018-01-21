@@ -1,9 +1,12 @@
 from app.models import FilmRating
+from app.models import AccessApplication
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
 import simplejson as json
 from django.http import HttpResponse
 from django.db import DatabaseError
+from django.utils.crypto import get_random_string
+from datetime import datetime
 
 def root(request):
     return HttpResponse(json.dumps({"respMsg": u'alive'}),  status=200,
@@ -34,6 +37,12 @@ def check_id(id):
     return True
 
 
+######################################################
+def check_token_valid(token):
+    if token == db.token and abs(t_created - now()) > lifetime:
+        return True
+    return False
+###################################
 
 def get_rating(request, id):
     data = check_id(id)
@@ -53,8 +62,34 @@ def get_rating(request, id):
     return HttpResponse(json.dumps({"respMsg": u'Ok', "filmAvgRating": f_rating}),  status=200,
     content_type='application/json')
 
+
+#####################################
 @csrf_exempt
-def delete_rating(request): #f_id, u_id):
+def get_new_token(request):
+    data = json.loads(request.body.decode("utf-8"))
+    try:
+        aName = data['appId']
+    except KeyError as err:
+        return HttpResponse(json.dumps({"respMsg": u'Uncknown server'}),  status=401,
+        content_type='application/json')
+
+    print(aName)
+    if AccessApplication.objects.filter(appName=aName).count() > 0:
+        print('Ok')
+        record = AccessApplication.objects.filter(appName=aName)
+        unique_token = get_random_string(length=32)
+        life = 60
+        record.update(appSecret=unique_token, life=life, created=datetime.now())
+        return HttpResponse(json.dumps({"appSecret": unique_token}),  status=200,
+        content_type='application/json')
+    else:
+        return HttpResponse(json.dumps({"respMsg": u'Uncknown server'}),  status=401,
+        content_type='application/json')
+#####################################################
+
+@csrf_exempt
+def delete_rating(request):
+    ###
     data = json.loads(request.body.decode("utf-8"))
 
     important_params = ['filmId', 'userId']
@@ -78,6 +113,8 @@ def delete_rating(request): #f_id, u_id):
 
 
 def get_linked_objects(request, id):
+    ###
+
     data = check_id(id)
     if data != True:
         return data
@@ -113,6 +150,7 @@ def get_linked_objects(request, id):
 
 @csrf_exempt
 def delete_film_rating(request):
+    ### check
     data = json.loads(request.body.decode("utf-8"))
     check = is_parameter_valid('filmId', data.get('filmId'))
     if check != True:
@@ -131,6 +169,7 @@ def delete_film_rating(request):
 
 @csrf_exempt
 def set_rating(request):
+    # check
     data = json.loads(request.body.decode("utf-8"))
 
     #check params

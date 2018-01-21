@@ -20,6 +20,7 @@ from app import views
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
+    re_path(r'^get_token', views.get_new_token),
     re_path(r'^delete_film_rating', views.delete_film_rating),
     re_path(r'^status', views.root),
     re_path(r'^delete_rating', views.delete_rating),

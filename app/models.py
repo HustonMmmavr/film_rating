@@ -49,3 +49,9 @@ class FilmRating(models.Model):
     user_id = models.IntegerField()
 
     objects = FilmRatingManager()
+
+class AccessApplication(models.Model):
+    appName = models.CharField(max_length=200)
+    appSecret = models.CharField(max_length=200)
+    life = models.IntegerField()
+    created = models.TimeField()
