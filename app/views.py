@@ -36,15 +36,19 @@ def check_id(id):
         content_type='application/json')
     return True
 
-
-######################################################
-def check_token_valid(token):
+def check_token_valid(request):
     print('here')
-    record = AccessApplication.objects.filter(appSecret=token)
+    if 'HTTP_AUTHORIZATION' in request.META:
+        data = request.META['HTTP_AUTHORIZATION'].split()
+    if len(data) == 1:
+        return False
+
+    token = data[-1]
+    record = AccessApplication.objects.filter(appToken=token)
     if record.count() == 0:
         return False
 
-    record = AccessApplication.objects.filter(appSecret=token)[0]
+    record = record[0]
     now = mktime(datetime.now().timetuple()) #now.total_seconds())
     created = mktime(record.created.timetuple())
 
@@ -53,7 +57,37 @@ def check_token_valid(token):
 
     return True
 
+######################################################
+@csrf_exempt
+def get_new_token(request):
+    if 'HTTP_AUTHORIZATION' in request.META:
+        data = request.META['HTTP_AUTHORIZATION'].split()
+    else:
+        return HttpResponse(json.dumps({"respMsg": u'Uncknown server'}),  status=401,
+        content_type='application/json')
+
+    data = data[-1]
+    data = data.split(':')
+    aName = data[0]
+    aSecret = data[1]
+
+    if AccessApplication.objects.filter(appName=aName, appSecret=aSecret).count() > 0:
+        print('Ok')
+        record = AccessApplication.objects.filter(appName=aName, appSecret=aSecret)
+        unique_token = get_random_string(length=32)
+        life = 60
+        record.update(appToken=unique_token, life=life, created=datetime.now())
+        return HttpResponse(json.dumps({"token": unique_token}),  status=200,
+        content_type='application/json')
+    else:
+        return HttpResponse(json.dumps({"respMsg": u'Uncknown server'}),  status=401,
+        content_type='application/json')
+
+
 def get_rating(request, id):
+    if check_token_valid(request) == False:#data['appSecret']) == False:
+        return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
+        content_type='application/json')
     data = check_id(id)
     if data != True:
         return data
@@ -73,29 +107,11 @@ def get_rating(request, id):
 
 
 @csrf_exempt
-def get_new_token(request):
-    data = json.loads(request.body.decode("utf-8"))
-    try:
-        aName = data['appId']
-    except KeyError as err:
-        return HttpResponse(json.dumps({"respMsg": u'Uncknown server'}),  status=401,
-        content_type='application/json')
-
-    print(aName)
-    if AccessApplication.objects.filter(appName=aName).count() > 0:
-        print('Ok')
-        record = AccessApplication.objects.filter(appName=aName)
-        unique_token = get_random_string(length=32)
-        life = 60
-        record.update(appSecret=unique_token, life=life, created=datetime.now())
-        return HttpResponse(json.dumps({"appSecret": unique_token}),  status=200,
-        content_type='application/json')
-    else:
-        return HttpResponse(json.dumps({"respMsg": u'Uncknown server'}),  status=401,
-        content_type='application/json')
-
-@csrf_exempt
 def delete_rating(request):
+    if check_token_valid(request) == False:#data['appSecret']) == False:
+        return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
+        content_type='application/json')
+    # check_token_valid(request.get)
     data = json.loads(request.body.decode("utf-8"))
     if check_token_valid(data['appSecret']) == False:
         return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
@@ -122,6 +138,9 @@ def delete_rating(request):
 
 
 def get_linked_objects(request, id):
+    if check_token_valid(request) == False:#data['appSecret']) == False:
+        return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
+        content_type='application/json')
     data = check_id(id)
     if data != True:
         return data
@@ -162,6 +181,9 @@ def get_linked_objects(request, id):
 
 @csrf_exempt
 def delete_film_rating(request):
+    if check_token_valid(request) == False:#data['appSecret']) == False:
+        return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
+        content_type='application/json')
     data = json.loads(request.body.decode("utf-8"))
     if check_token_valid(data['appSecret']) == False:
         return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
@@ -185,7 +207,7 @@ def delete_film_rating(request):
 @csrf_exempt
 def set_rating(request):
     data = json.loads(request.body.decode("utf-8"))
-    if check_token_valid(data['appSecret']) == False:
+    if check_token_valid(request) == False:#data['appSecret']) == False:
         return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
         content_type='application/json')
 
@@ -209,19 +231,4 @@ def set_rating(request):
     return HttpResponse(json.dumps({"respMsg": "Ok", "filmAvgRating": film_avg_rating,
         "isUpdated" : flag, "oldData" : old_data}),
                         status=200, content_type='application/json')
-
-
-
-
-                        # now = datetime.now()
-                        # print('a')
-                        # print(now)
-                        # print('b')
-                        # print(record.created)
-                        # print(now - record.created)
-                        # now - record.created > record.life
-
-                        # if token == db.token and abs(t_created - now()) > lifetime:
-                            # return True
-                        # return False
-                    ###################################
+                        

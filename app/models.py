@@ -52,6 +52,7 @@ class FilmRating(models.Model):
 
 class AccessApplication(models.Model):
     appName = models.CharField(max_length=200)
-    appSecret = models.CharField(max_length=200)
+    appSecret = models.CharField(max_length=200, default=None)
+    appToken = models.CharField(max_length=200)
     life = models.IntegerField()
     created = models.DateTimeField()
