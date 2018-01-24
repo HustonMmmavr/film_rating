@@ -37,11 +37,12 @@ def check_id(id):
     return True
 
 def check_token_valid(request):
+    print(request)
     print('here')
     if 'HTTP_AUTHORIZATION' in request.META:
         data = request.META['HTTP_AUTHORIZATION'].split()
-    if len(data) == 1:
-        return False
+        if len(data) == 1:
+            return False
 
     token = data[-1]
     record = AccessApplication.objects.filter(appToken=token)
@@ -60,6 +61,7 @@ def check_token_valid(request):
 ######################################################
 @csrf_exempt
 def get_new_token(request):
+    print('here')
     if 'HTTP_AUTHORIZATION' in request.META:
         data = request.META['HTTP_AUTHORIZATION'].split()
     else:
@@ -113,9 +115,6 @@ def delete_rating(request):
         content_type='application/json')
     # check_token_valid(request.get)
     data = json.loads(request.body.decode("utf-8"))
-    if check_token_valid(data['appSecret']) == False:
-        return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
-        content_type='application/json')
 
     important_params = ['filmId', 'userId']
     for param in important_params:
@@ -138,9 +137,11 @@ def delete_rating(request):
 
 
 def get_linked_objects(request, id):
+    print(request.META['HTTP_AUTHORIZATION'])
     if check_token_valid(request) == False:#data['appSecret']) == False:
         return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
         content_type='application/json')
+
     data = check_id(id)
     if data != True:
         return data
@@ -148,10 +149,6 @@ def get_linked_objects(request, id):
 
     search_by = request.GET.get('search_by', '')
     token = request.GET.get('appSecret')
-
-    if check_token_valid(token) == False:
-        return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
-        content_type='application/json')
 
     try:
         if search_by=='user_id':
@@ -185,9 +182,6 @@ def delete_film_rating(request):
         return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
         content_type='application/json')
     data = json.loads(request.body.decode("utf-8"))
-    if check_token_valid(data['appSecret']) == False:
-        return  HttpResponse(json.dumps({"respMsg": u'Token invalid'}),  status=401,
-        content_type='application/json')
 
     check = is_parameter_valid('filmId', data.get('filmId'))
     if check != True:
@@ -231,4 +225,3 @@ def set_rating(request):
     return HttpResponse(json.dumps({"respMsg": "Ok", "filmAvgRating": film_avg_rating,
         "isUpdated" : flag, "oldData" : old_data}),
                         status=200, content_type='application/json')
-                        
